@@ -17,6 +17,7 @@ using Microsoft.Azure.Commands.Common.Authentication;
 using Newtonsoft.Json;
 using Microsoft.Azure.Commands.StorageSync.Interop.Interfaces;
 using Microsoft.Rest.TransientFaultHandling;
+using Microsoft.Azure.Commands.StorageSync.Properties;
 
 namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
 {
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
         /// </summary>
         private readonly string managedIdentityTokenEndpoint;
 
-        private readonly ServerType serverType;
+        private readonly LocalServerType serverType;
 
         private readonly HttpClient httpClient;
 
@@ -78,7 +79,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
         /// Provider class to generate the managed identity token from Azure IMDS/HIMDS endpoint
         /// </summary>
         public ServerManagedIdentityTokenProvider(
-            ServerType inputServerType,
+            LocalServerType inputServerType,
             HttpClient client = default,
             Action<string, EventLevel> traceLog = default)
         {
@@ -97,11 +98,11 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                 httpClient = client;
             }
 
-            if (serverType == ServerType.ArcEnabledHybridServer)
+            if (serverType == LocalServerType.ArcEnabledHybridServer)
             {
                 managedIdentityTokenEndpoint = $"{HybridTokenUri}?api-version={HybridTokenApiVersion}";
             }
-            else if (serverType == ServerType.AzureVirtualMachineServer)
+            else if (serverType == LocalServerType.AzureVirtualMachineServer)
             {
                 managedIdentityTokenEndpoint = $"{AzureTokenUri}?api-version={AzureTokenApiVersion}";
             }
@@ -175,7 +176,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                 {
                     throw new ServerManagedIdentityTokenException(
                         ManagedIdentityErrorCodes.ServerManagedIdentityTokenGenerationFailed,
-                        "TODO:.AgentMI_TokenResponseNullError",
+                        StorageSyncResources.AgentMI_TokenResponseNullError,
                         null);
                 }
 
@@ -247,7 +248,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                         //    https://learn.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=windows#security-and-authentication
                         requestMessage.Headers.Add(HeaderConstants.Metadata, "true");
 
-                        if (serverType == ServerType.ArcEnabledHybridServer)
+                        if (serverType == LocalServerType.ArcEnabledHybridServer)
                         {
                             challengeToken = await GetChallengeToken(requestUri).ConfigureAwait(false);
 
@@ -255,7 +256,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                             {
                                 throw new ServerManagedIdentityTokenException(
                                     ManagedIdentityErrorCodes.ServerManagedIdentityTokenGenerationFailed,
-                                    "TODO:.AgentMI_ChallengeTokenNullError",
+                                    StorageSyncResources.AgentMI_ChallengeTokenNullError,
                                     null);
                             }
 
@@ -293,7 +294,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                                     {
                                         throw new ServerManagedIdentityTokenException(
                                             ManagedIdentityErrorCodes.ServerManagedIdentitySystemIdentityNotFound,
-                                            "TODO:.AgentMI_MissingSystemIdentityWithMultipleUserAssignedError",
+                                            StorageSyncResources.AgentMI_MissingSystemIdentityWithMultipleUserAssignedError,
                                             new NotSupportedException(errorResponse.ErrorDescription));
                                     }
                                     else
@@ -371,7 +372,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                     {
                         throw new ServerManagedIdentityTokenException(
                             ManagedIdentityErrorCodes.ServerManagedIdentityTokenChallengeFailed,
-                            "TODO:.AgentMI_UnexpectedArcChallengeResponseError",
+                            StorageSyncResources.AgentMI_UnexpectedArcChallengeResponseError,
                             null);
                     }
 
@@ -381,7 +382,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                     {
                         throw new ServerManagedIdentityTokenException(
                             ManagedIdentityErrorCodes.ServerManagedIdentityTokenChallengeFailed,
-                            "TODO:.AgentMI_MissingWWWAuthenticateHeaderError",
+                            StorageSyncResources.AgentMI_MissingWWWAuthenticateHeaderError,
                             null);
                     }
 
@@ -391,7 +392,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                     {
                         throw new ServerManagedIdentityTokenException(
                             ManagedIdentityErrorCodes.ServerManagedIdentityTokenChallengeFailed,
-                            "TODO:.AgentMI_MissingWWWAuthenticateValueError",
+                            StorageSyncResources.AgentMI_MissingWWWAuthenticateValueError,
                             null);
                     }
 
@@ -410,7 +411,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                     {
                         throw new ServerManagedIdentityTokenException(
                             ManagedIdentityErrorCodes.ServerManagedIdentityTokenChallengeFailed,
-                            "TODO:.AgentMI_InvalidSecretFileError",
+                            StorageSyncResources.AgentMI_InvalidSecretFileError,
                             null);
                     }
 
@@ -422,7 +423,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
                     {
                         throw new ServerManagedIdentityTokenException(
                             ManagedIdentityErrorCodes.ServerManagedIdentityTokenChallengeFailed,
-                            "TODO:.AgentMI_MissingSecretFilePathOnServerError",
+                            StorageSyncResources.AgentMI_MissingSecretFilePathOnServerError,
                             null);
                     }
                 }

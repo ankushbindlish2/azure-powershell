@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
         /// </summary>
         /// <param name="ecsManagement"></param>
         /// <returns>ServerType: Azure, Hybrid, or Unknown</returns>
-        ServerType GetServerType(IEcsManagement ecsManagement);
+        LocalServerType GetServerType(IEcsManagement ecsManagement);
 
         /// <summary>
         /// Gets the server's application id by trying to get a token and parsing for the oid
@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
         /// </summary>
         /// <param name="serverType">ServerType: Hybrid or Azure</param>
         /// <param name="throwIfNotFound">Whether to throw an exception if an Application ID is not available</param>
-        /// <param name="validateSAMI">Whether to validate that the Application Id belongs to a System-Assigned Managed Identity</param>
+        /// <param name="validateSystemAssignedManagedIdentity">Whether to validate that the Application Id belongs to a System-Assigned Managed Identity</param>
         /// <returns>Server's applicationId if it's available, Guid.Empty otherwise</returns>
-        Guid GetServerApplicationId(ServerType serverType, bool throwIfNotFound = true, bool validateSAMI = true);
+        Guid GetServerApplicationId(LocalServerType serverType, bool throwIfNotFound = true, bool validateSystemAssignedManagedIdentity = true);
     }
 }

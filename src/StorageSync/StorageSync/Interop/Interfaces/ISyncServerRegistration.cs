@@ -39,7 +39,6 @@ namespace Commands.StorageSync.Interop.Interfaces
         /// <param name="certificateProviderName">Certificate Provider Name</param>
         /// <param name="certificateHashAlgorithm">Certificate Hash Algorithm</param>
         /// <param name="certificateKeyLength">Certificate Key Length</param>
-        /// <param name="applicationId"></param>
         /// <param name="monitoringDataPath">Monitoring data path</param>
         /// <param name="agentVersion">Agent Version</param>
         /// <param name="serverMachineName">Server Machine Name</param>
@@ -54,7 +53,6 @@ namespace Commands.StorageSync.Interop.Interfaces
             string certificateProviderName,
             string certificateHashAlgorithm,
             uint certificateKeyLength,
-            Guid applicationId,
             string monitoringDataPath,
             string agentVersion,
             string serverMachineName,

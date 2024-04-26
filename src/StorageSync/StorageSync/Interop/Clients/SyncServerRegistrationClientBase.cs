@@ -98,7 +98,7 @@ namespace Commands.StorageSync.Interop.Clients
             string certificateProviderName,
             string certificateHashAlgorithm,
             uint certificateKeyLength,
-            Guid applicationId,
+            Guid? applicationId,
             string monitoringDataPath,
             string agentVersion,
             string serverMachineName);
@@ -113,6 +113,12 @@ namespace Commands.StorageSync.Interop.Clients
         /// <param name="monitoringDataPath">Monitoring data path</param>
         /// <returns>success status</returns>
         public abstract bool Persist(RegisteredServer registeredServerResource, Guid subscriptionId, string storageSyncServiceName, string resourceGroupName, string monitoringDataPath);
+
+        /// <summary>
+        /// This function will return the application id of the server if it is available.
+        /// </summary>
+        /// <returns>Application Id or null</returns>
+        public abstract Guid? GetApplicationIdOrNull();
 
         /// <summary>
         /// Dispose method for cleaning Interop client object.
@@ -145,7 +151,6 @@ namespace Commands.StorageSync.Interop.Clients
         /// <param name="certificateProviderName">Certificate Provider Name</param>
         /// <param name="certificateHashAlgorithm">Certificate Hash Algorithm</param>
         /// <param name="certificateKeyLength">Certificate Key Length</param>
-        /// <param name="applicationId">Server's Managed Identity ID</param>
         /// <param name="monitoringDataPath">Monitoring data path</param>
         /// <param name="agentVersion">Agent Version</param>
         /// <param name="serverMachineName">Server Machine Name</param>
@@ -159,18 +164,21 @@ namespace Commands.StorageSync.Interop.Clients
             string certificateProviderName,
             string certificateHashAlgorithm,
             uint certificateKeyLength,
-            Guid applicationId,
             string monitoringDataPath,
             string agentVersion,
             string serverMachineName,
             Func<string,string,ServerRegistrationData, RegisteredServer> registerOnlineCallback)
         {
-            // Honor identity if present
-            bool isCertificateRegistration = applicationId == Guid.Empty;
+            // Discover the server type , Get the application id, 
+            Guid? applicationId = GetApplicationIdOrNull();
 
+            // Honor identity if present
+            bool isCertificateRegistration = applicationId.GetValueOrDefault(Guid.Empty) == Guid.Empty;
+
+            // Set the registry key for ServerAuthType
             RegistryUtility.WriteValue(StorageSyncConstants.ServerAuthRegistryKeyName,
                        StorageSyncConstants.AfsAgentRegistryKey,
-                      ((applicationId == Guid.Empty) ? RegisteredServerAuthType.Certificate : RegisteredServerAuthType.ManagedIdentity).ToString(),
+                      (isCertificateRegistration ? RegisteredServerAuthType.Certificate : RegisteredServerAuthType.ManagedIdentity).ToString(),
                        RegistryValueKind.String,
                        true);
 
@@ -214,50 +222,5 @@ namespace Commands.StorageSync.Interop.Clients
         {
             EcsManagementInteropClient.ResetSyncServerConfiguration(cleanClusterRegistration);
         }
-
-        private Guid GetServerApplicationIdOrEmpty()
-        {
-            if (!this.EnableMIChecking)
-            {
-                return Guid.Empty;
-            }
-
-            ManagedIdentityConfigurationInfo managedIdentityConfigurationInfo;
-            try
-            {
-                managedIdentityConfigurationInfo = GetManagedIdentityConfigurationStatus();
-            }
-            catch (Exception)
-            {
-                throw new ServerRegistrationException(ServerRegistrationErrorCode.GetServerTypeFailed, ErrorCategory.MetadataError);
-            }
-
-            using (var serverMITokenProvider = new ServerManagedIdentityTokenProvider(managedIdentityConfigurationInfo.ServerType))
-            {
-                var token = Task.Run(() => serverMITokenProvider.GetManagedIdentityAccessToken(resource: "https://afs.azure.net/")).GetAwaiter().GetResult();
-
-                if (string.IsNullOrEmpty(token))
-                {
-                    throw new ArgumentException("serverInfo");
-                }
-
-                return ServerManagedIdentityTokenHelper.GetTokenOid(token);
-            }
-        }
-        private ManagedIdentityConfigurationInfo GetManagedIdentityConfigurationStatus()
-        {
-            ManagedIdentityConfigurationInfo serverInfo;
-            int hresult = this.EcsManagementInteropClient.GetMIConfigurationStatus(out uint serverTypeUint, out uint serverAuthTypeUint);
-            if (HResult.Succeeded(hresult))
-            {
-                serverInfo = new ManagedIdentityConfigurationInfo((ServerType)serverTypeUint, (RegisteredServerAuthType)serverAuthTypeUint);
-            }
-            else
-            {
-                throw new System.Runtime.InteropServices.COMException("GetManagedIdentityConfigurationStatus", hresult);
-            }
-            return serverInfo;
-        }
-
     }
 }

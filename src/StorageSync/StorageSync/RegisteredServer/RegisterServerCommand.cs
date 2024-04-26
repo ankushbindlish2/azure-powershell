@@ -204,7 +204,6 @@ namespace Microsoft.Azure.Commands.StorageSync.Cmdlets
                     ManagementInteropConstants.CertificateProviderName,
                     ManagementInteropConstants.CertificateHashAlgorithm,
                     ManagementInteropConstants.CertificateKeyLength,
-                    Guid.Empty,
                     Path.Combine(StorageSyncClientWrapper.AfsAgentInstallerPath, StorageSyncConstants.MonitoringAgentDirectoryName),
                     StorageSyncClientWrapper.AfsAgentVersion,
                     ServerMachineName,

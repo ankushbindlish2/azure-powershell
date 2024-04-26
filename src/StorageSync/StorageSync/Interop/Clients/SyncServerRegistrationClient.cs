@@ -18,6 +18,8 @@ using Commands.StorageSync.Interop.Interfaces;
 using Microsoft.Azure.Commands.StorageSync.Common;
 using Microsoft.Azure.Commands.StorageSync.Common.Extensions;
 using Microsoft.Azure.Commands.StorageSync.InternalObjects;
+using Microsoft.Azure.Commands.StorageSync.Interop.Enums;
+using Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity;
 using Microsoft.Azure.Management.StorageSync.Models;
 using Newtonsoft.Json;
 using System;
@@ -37,13 +39,16 @@ namespace Commands.StorageSync.Interop.Clients
     /// <seealso cref="Commands.StorageSync.Interop.Clients.SyncServerRegistrationClientBase" />
     public class SyncServerRegistrationClient : SyncServerRegistrationClientBase
     {
+        protected readonly IServerManagedIdentityProvider ServerManagedIdentityProvider;
 
         /// <summary>
         /// Parameterzed constructor for Sync Server Registration Client
         /// </summary>
         /// <param name="ecsManagementInteropClient">The ecs management interop client.</param>
-        public SyncServerRegistrationClient(IEcsManagement ecsManagementInteropClient) : base(ecsManagementInteropClient)
+        /// <param name="serverManagedIdentityProvider">The server managed identity provider.</param>
+        public SyncServerRegistrationClient(IEcsManagement ecsManagementInteropClient, IServerManagedIdentityProvider serverManagedIdentityProvider) : base(ecsManagementInteropClient)
         {
+            this.ServerManagedIdentityProvider= serverManagedIdentityProvider;
         }
 
         /// <summary>
@@ -115,7 +120,7 @@ namespace Commands.StorageSync.Interop.Clients
             string certificateProviderName,
             string certificateHashAlgorithm,
             uint certificateKeyLength,
-            Guid applicationId,
+            Guid? applicationId,
             string monitoringDataPath,
             string agentVersion,
             string serverMachineName)
@@ -384,6 +389,21 @@ namespace Commands.StorageSync.Interop.Clients
             {
             }
             return false;
+        }
+
+        /// <summary>
+        /// This function will get the application id of the server if identity is available.
+        /// </summary>
+        /// <returns>Application id or null.</returns>
+        public override Guid? GetApplicationIdOrNull()
+        {
+            LocalServerType localServerType = this.ServerManagedIdentityProvider.GetServerType(this.EcsManagementInteropClient);
+
+            if(localServerType != LocalServerType.HybridServer)
+            {
+                return this.ServerManagedIdentityProvider.GetServerApplicationId(localServerType, throwIfNotFound: true, validateSystemAssignedManagedIdentity: true);
+            }
+            return null;
         }
     }
 }

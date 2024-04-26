@@ -12,6 +12,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using Microsoft.Azure.Commands.Common.Authentication.Factories;
 using Microsoft.Azure.Commands.ResourceManager.Common;
 using System.Management.Automation;
 
@@ -184,20 +185,27 @@ namespace Microsoft.Azure.Commands.StorageSync.Common
         public const string HybridInstanceMetadataUri = "http://localhost:40342/metadata/instance/compute?api-version=2019-11-01";
 
         /// <summary>
-        /// Azure Token Uri. 
-        /// TODO: AuthenticationFactory or ManagedServiceIdentityAuthenticator
-        ///  DefaultMSILoginUri = "http://169.254.169.254/metadata/identity/oauth2/token",
-        ///  DefaultBackupMSILoginUri = "http://localhost:50342/oauth2/token";
+        /// Azure Token Uri.
+        ///  Azure IMDS Documentation: https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
+        /// DefaultMSILoginUri = "http://169.254.169.254/metadata/identity/oauth2/token",
         /// </summary>
-        public const string AzureTokenUri = "http://169.254.169.254/metadata/identity/oauth2/token?resource=https://management.azure.com/&api-version=2019-11-01";
+        public const string AzureTokenUri = DefaultMSILoginUri + "?resource=https://management.azure.com/&api-version=2019-11-01";
 
         /// <summary>
         /// Hybrid Token Uri
-        /// TODO: AuthenticationFactory or ManagedServiceIdentityAuthenticator
-        ///  DefaultMSILoginUri = "http://169.254.169.254/metadata/identity/oauth2/token",
-        ///  DefaultBackupMSILoginUri = "http://localhost:50342/oauth2/token";
+        /// Hybrid IMDS Documentation: https://learn.microsoft.com/en-us/azure/azure-arc/servers/managed-identity-authentication
         /// </summary>
         public const string HybridTokenUri = "http://localhost:40342/metadata/identity/oauth2/token?resource=https://management.azure.com/&api-version=2020-06-01";
+
+        /// <summary>
+        /// Default MSILoginUri
+        /// </summary>
+        public const string DefaultMSILoginUri = "http://169.254.169.254/metadata/identity/oauth2/token";
+
+        /// <summary>
+        /// default backup MSILoginUri
+        /// </summary>
+        public const string DefaultBackupMSILoginUri = "http://localhost:50342/oauth2/token";
 
         /// <summary>
         /// GetVM API Version

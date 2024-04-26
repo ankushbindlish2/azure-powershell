@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Commands.StorageSync.InternalObjects
         }
 
         [JsonProperty(PropertyName = "applicationId", Required = Required.Default)]
-        public Guid ApplicationId
+        public Guid? ApplicationId
         {
             get;
             set;

@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Common
             }
             catch (Exception ex)
             {
-                WriteVerbose("Stephanie:" + ex.ToString());
+                WriteVerbose(ex.Message);
                 throw;
             }
             
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Common
                 }
                 catch(Exception ex)
                 {
-                    WriteVerbose("Stephanie:" + ex.ToString());
+                    WriteVerbose(ex.Message);
                     throw;
                 }
             }
