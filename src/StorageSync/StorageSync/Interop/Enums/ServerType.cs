@@ -6,8 +6,8 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.Enums
 {
     public enum ServerType
     {
-        Unknown = 0,    // Not Azure VM and not Arc-enabled Server
-        Hybrid = 1,     // Arc-enabled Server
-        Azure = 2       // Azure VM
+        HybridServer = 0,    // Not Azure VM and not Arc-enabled Server
+        ArcEnabledHybridServer = 1,     // Arc-enabled Server
+        AzureVirtualMachineServer = 2       // Azure VM
     }
 }

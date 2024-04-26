@@ -36,7 +36,7 @@ namespace Commands.StorageSync.Interop.Clients
     /// <seealso cref="Commands.StorageSync.Interop.Interfaces.ISyncServerRegistration" />
     public abstract class SyncServerRegistrationClientBase : ISyncServerRegistration
     {
-        public bool EnableMIChecking { get; protected set; } = false; // enable it in v19 azure file sync agent
+        public bool EnableMIChecking { get; protected set; } = true;
 
         /// <summary>
         /// The m is disposed
@@ -70,6 +70,7 @@ namespace Commands.StorageSync.Interop.Clients
         public abstract bool Validate(Uri managementEndpointUri, Guid subscriptionId, string storageSyncService, string resourceGroupName, string monitoringDataPath);
 
         /// <summary>
+        /// Setup for registration with Certificate.
         /// This function processes the registration and perform following steps
         /// 1. EnsureSyncServerCertificate
         /// 2. GetSyncServerCertificate
@@ -84,10 +85,10 @@ namespace Commands.StorageSync.Interop.Clients
         /// <param name="certificateProviderName">Certificate Provider Name</param>
         /// <param name="certificateHashAlgorithm">Certificate Hash Algorithm</param>
         /// <param name="certificateKeyLength">Certificate Key Length</param>
-        /// <param name="applicationId">Server Identity Id</param>
+        /// <param name="applicationId">Server's Application (Managed Identity) ID</param>
         /// <param name="monitoringDataPath">Monitoring data path</param>
         /// <param name="agentVersion">Agent Version</param>
-        /// <param name="serverMachineName">Server machine name.</param>
+        /// <param name="serverMachineName">Server Machine Name</param>
         /// <returns>Registered Server resource</returns>
         public abstract ServerRegistrationData Setup(
             Uri managementEndpointUri,
@@ -103,7 +104,7 @@ namespace Commands.StorageSync.Interop.Clients
             string serverMachineName);
 
         /// <summary>
-        /// Persisting the register server resource from clooud to the local service.
+        /// Persisting the register server resource from cloud to the local service.
         /// </summary>
         /// <param name="registeredServerResource">Registered Server Resource</param>
         /// <param name="subscriptionId">Subscription Id</param>
@@ -131,12 +132,11 @@ namespace Commands.StorageSync.Interop.Clients
         }
 
         /// <summary>
-        /// This function processes the registration and perform following steps
-        /// 1. EnsureSyncServerCertificate
-        /// 2. GetSyncServerCertificate
-        /// 3. GetSyncServerId
-        /// 4. Get ClusterInfo
-        /// 5. Populate RegistrationServerResource
+        /// This function processes the registration and performs the following steps:
+        /// 1. Validates Sync Server Registration Information
+        /// 2. Sets up ServerRegistrationData
+        /// 3. Calls RegisterOnline callback to make ARM call (from caller context)
+        /// 4. Persists registered server resource from cloud to local FileSyncSvc service
         /// </summary>
         /// <param name="managementEndpointUri">Management endpoint Uri</param>
         /// <param name="subscriptionId">Subscription Id</param>
@@ -145,14 +145,12 @@ namespace Commands.StorageSync.Interop.Clients
         /// <param name="certificateProviderName">Certificate Provider Name</param>
         /// <param name="certificateHashAlgorithm">Certificate Hash Algorithm</param>
         /// <param name="certificateKeyLength">Certificate Key Length</param>
+        /// <param name="applicationId">Server's Managed Identity ID</param>
         /// <param name="monitoringDataPath">Monitoring data path</param>
         /// <param name="agentVersion">Agent Version</param>
-        /// <param name="serverMachineName">Server machine name.</param>
+        /// <param name="serverMachineName">Server Machine Name</param>
         /// <param name="registerOnlineCallback">Register Online Callback</param>
         /// <returns>Registered Server Resource</returns>
-        /// <exception cref="Commands.StorageSync.Interop.Exceptions.ServerRegistrationException">
-        /// </exception>
-        /// <exception cref="ServerRegistrationException"></exception>
         public RegisteredServer Register(
             Uri managementEndpointUri,
             Guid subscriptionId,
@@ -161,13 +159,14 @@ namespace Commands.StorageSync.Interop.Clients
             string certificateProviderName,
             string certificateHashAlgorithm,
             uint certificateKeyLength,
+            Guid applicationId,
             string monitoringDataPath,
             string agentVersion,
             string serverMachineName,
             Func<string,string,ServerRegistrationData, RegisteredServer> registerOnlineCallback)
         {
-            // Get ApplicationId
-            Guid applicationId = GetServerApplicationIdOrEmpty();
+            // Honor identity if present
+            bool isCertificateRegistration = applicationId == Guid.Empty;
 
             RegistryUtility.WriteValue(StorageSyncConstants.ServerAuthRegistryKeyName,
                        StorageSyncConstants.AfsAgentRegistryKey,
@@ -192,9 +191,11 @@ namespace Commands.StorageSync.Interop.Clients
                 throw new ServerRegistrationException(ServerRegistrationErrorCode.RegisterOnlineSyncRegistrationFailed);
             }
 
-            // Setting ServerCertificate from request resource to response resource so that it can be used by Monitoring pipeline
-            resultantRegisteredServerResource.ServerCertificate = Convert.ToBase64String(serverRegistrationData.ServerCertificate);
-
+            if (isCertificateRegistration)
+            {
+                // Setting ServerCertificate from request resource to response resource so that it can be used by Monitoring pipeline
+                resultantRegisteredServerResource.ServerCertificate = Convert.ToBase64String(serverRegistrationData.ServerCertificate);
+            }
             if (!Persist(resultantRegisteredServerResource, subscriptionId, storageSyncServiceName, resourceGroupName, monitoringDataPath))
             {
                 throw new ServerRegistrationException(ServerRegistrationErrorCode.PersistSyncServerRegistrationFailed);

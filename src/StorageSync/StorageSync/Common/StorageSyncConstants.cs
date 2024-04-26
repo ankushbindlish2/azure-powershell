@@ -152,5 +152,66 @@ namespace Microsoft.Azure.Commands.StorageSync.Common
         /// Registry key name for Server Type
         /// </summary>
         public const string ServerTypeRegistryKeyName = "ServerType";
+
+        /// <summary>
+        /// Compute ResourceType
+        /// </summary>
+        public const string ComputeResourceType = "Microsoft.Compute";
+
+        /// <summary>
+        /// Hybrid Resource Type
+        /// </summary>
+        public const string HybridResourceType = "Microsoft.HybridCompute";
+
+        /// <summary>
+        /// Virtual Machines
+        /// </summary>
+        public const string VirtualMachineString = "virtualMachines";
+
+        /// <summary>
+        /// machines
+        /// </summary>
+        public const string HybridMachineString = "machines";
+
+        /// <summary>
+        /// Azure Instance Metadata Uri
+        /// </summary>
+        public const string AzureInstanceMetadataUri = "http://169.254.169.254/metadata/instance/compute?api-version=2019-11-01";
+
+        /// <summary>
+        /// Hybrid Instance Metadata Uri
+        /// </summary>
+        public const string HybridInstanceMetadataUri = "http://localhost:40342/metadata/instance/compute?api-version=2019-11-01";
+
+        /// <summary>
+        /// Azure Token Uri. 
+        /// TODO: AuthenticationFactory or ManagedServiceIdentityAuthenticator
+        ///  DefaultMSILoginUri = "http://169.254.169.254/metadata/identity/oauth2/token",
+        ///  DefaultBackupMSILoginUri = "http://localhost:50342/oauth2/token";
+        /// </summary>
+        public const string AzureTokenUri = "http://169.254.169.254/metadata/identity/oauth2/token?resource=https://management.azure.com/&api-version=2019-11-01";
+
+        /// <summary>
+        /// Hybrid Token Uri
+        /// TODO: AuthenticationFactory or ManagedServiceIdentityAuthenticator
+        ///  DefaultMSILoginUri = "http://169.254.169.254/metadata/identity/oauth2/token",
+        ///  DefaultBackupMSILoginUri = "http://localhost:50342/oauth2/token";
+        /// </summary>
+        public const string HybridTokenUri = "http://localhost:40342/metadata/identity/oauth2/token?resource=https://management.azure.com/&api-version=2020-06-01";
+
+        /// <summary>
+        /// GetVM API Version
+        /// </summary>
+        public const string GetVmApiVersion = "2022-08-01";
+
+        /// <summary>
+        /// Get Hybrid API Version
+        /// </summary>
+        public const string GetHybridApiVersion = "2022-08-11-preview";
+
+        /// <summary>
+        /// Arm Resource Uri
+        /// </summary>
+        public const string ArmResourceUri = "https://management.azure.com";
     }
 }
