@@ -12,9 +12,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
-using Microsoft.Azure.Commands.Common.Authentication.Factories;
 using Microsoft.Azure.Commands.ResourceManager.Common;
-using System.Management.Automation;
 
 namespace Microsoft.Azure.Commands.StorageSync.Common
 {

@@ -1,11 +1,13 @@
 ﻿using Azure.Core;
 using Commands.StorageSync.Interop.DataObjects;
 using Commands.StorageSync.Interop.Interfaces;
+using Hyak.Common;
 using Microsoft.Azure.Commands.StorageSync.Common;
 using Microsoft.Azure.Commands.StorageSync.Interop.Enums;
 using Microsoft.Azure.Commands.StorageSync.Interop.Exceptions;
 using Microsoft.Azure.Commands.StorageSync.Interop.Interfaces;
 using Microsoft.Azure.Management.StorageSync.Models;
+using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -30,11 +32,14 @@ namespace Microsoft.Azure.Commands.StorageSync.Interop.ManagedIdentity
 
         public ServerManagedIdentityProvider(Action<string, EventLevel> traceLog = null)
         {
+            EnableMIChecking = true;
             this.TraceLog = new Action<string, EventLevel>((message, e) => {
                 if (traceLog != null)
                 {
                     traceLog(message, e);
                 }
+                // TODO: Check information is too verbose. Should be changed to Error
+                TracingAdapter.Information($"{DateTime.Now:T} [{e}] - {message}");
             });
         }
 

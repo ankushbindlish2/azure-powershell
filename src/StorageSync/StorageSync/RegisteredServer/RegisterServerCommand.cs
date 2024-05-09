@@ -124,6 +124,7 @@ namespace Microsoft.Azure.Commands.StorageSync.Cmdlets
         /// </summary>
         public override void ExecuteCmdlet()
         {
+            StorageSyncClientWrapper.VerboseLogger.Invoke($"RegisterServerCommand.ExecuteCmdlet() called");
             base.ExecuteCmdlet();
             ExecuteClientAction(() =>
             {
