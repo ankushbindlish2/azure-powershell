@@ -19,6 +19,14 @@
 -->
 
 ## Upcoming Release
+* Fixed the issue that Get-AzReource not working with `-ExpandProperties`. [#11248]
+* Updated Resources SDK to 2024-11-01.
+
+## Version 7.9.0
+* Added `-ApplicationId` as an alias of `-ServicePrincipalName`.
+* Supported getting role assignments at the exact scope via `-AtScope` for `Get-AzRoleAssignment`. 
+
+## Version 7.8.1
 * Updated to use bicep parameter --documentation-uri instead of the deprecated --documentationUri
 
 ## Version 7.8.0

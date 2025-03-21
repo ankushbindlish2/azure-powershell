@@ -19,6 +19,9 @@
 -->
 ## Upcoming Release
 
+## Version 0.2.2
+* Added support for CI policy signing for OS versions older than Nickel.
+
 ## Version 0.2.1
 * Upgraded nuget package to signed package.
 * Upgraded Azure.Core to 1.44.1.
