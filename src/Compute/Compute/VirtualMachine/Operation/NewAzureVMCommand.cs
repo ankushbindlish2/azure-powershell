@@ -354,6 +354,16 @@ namespace Microsoft.Azure.Commands.Compute
         [Parameter(
             Mandatory = false,
             ParameterSetName = SimpleParameterSet,
+            HelpMessage = "Specifies that the virtual machine is explicitly opted out from any capacity reservation assignment. When set, the virtual machine will not be implicitly or explicitly associated with any capacity reservation and will consume publicly available capacity instead.")]
+        [Parameter(
+            Mandatory = false,
+            ParameterSetName = DiskFileParameterSet,
+            HelpMessage = "Specifies that the virtual machine is explicitly opted out from any capacity reservation assignment. When set, the virtual machine will not be implicitly or explicitly associated with any capacity reservation and will consume publicly available capacity instead.")]
+        public SwitchParameter DisableCapacityReservationAssignment { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            ParameterSetName = SimpleParameterSet,
             HelpMessage = "UserData for the VM, which will be Base64 encoded. Customer should not pass any secrets in here.",
             ValueFromPipelineByPropertyName = true)]
         [Parameter(
@@ -405,6 +415,19 @@ namespace Microsoft.Azure.Commands.Compute
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "Specifies the vCPU to physical core ratio. When this property is not specified in the request body the default behavior is set to the value of vCPUsPerCore for the VM Size exposed in api response of [List all available virtual machine sizes in a region](https://learn.microsoft.com/en-us/rest/api/compute/resource-skus/list). Setting this property to 1 also means that hyper-threading is disabled.")]
         public int vCPUCountPerCore { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            ParameterSetName = SimpleParameterSet,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = "Specifies processor frequency behavior.")]
+        [Parameter(
+            Mandatory = false,
+            ParameterSetName = DiskFileParameterSet,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = "Specifies processor frequency behavior.")]
+        [PSArgumentCompleter("Deterministic", "Opportunistic")]
+        public string ProcessorMode { get; set; }
 
         [Parameter(
             Mandatory = false,
@@ -504,8 +527,28 @@ namespace Microsoft.Azure.Commands.Compute
             HelpMessage = "Specify whether to implicitly install the ProxyAgent Extension. This option is currently applicable only for Linux Os.")]
         public SwitchParameter AddProxyAgentExtension { get; set; }
 
+        [Parameter(
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            ParameterSetName = SimpleParameterSet,
+            HelpMessage = "Specifies the api-version to determine which Scheduled Events configuration schema version will be delivered. Format: YYYY-MM-DD. For available API versions, see https://learn.microsoft.com/rest/api/compute/scheduled-events.")]
+        [ValidateNotNullOrEmpty]
+        [ValidatePattern(@"^\d{4}-\d{2}-\d{2}$")]
+        public string ScheduledEventsApiVersion { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            ParameterSetName = SimpleParameterSet,
+            HelpMessage = "Specifies if Scheduled Events should be auto-approved when all instances are down.")]
+        public bool? EnableAllInstancesDown { get; set; }
+
         public override void ExecuteCmdlet()
         {
+            if (this.IsParameterBound(c => c.CapacityReservationGroupId) && this.IsParameterBound(c => c.DisableCapacityReservationAssignment))
+            {
+                throw new ArgumentException("Parameters '-CapacityReservationGroupId' and '-DisableCapacityReservationAssignment' cannot be used together. '-DisableCapacityReservationAssignment' opts the virtual machine out of any capacity reservation.");
+            }
 
             switch (ParameterSetName)
             {
@@ -742,6 +785,7 @@ namespace Microsoft.Azure.Commands.Compute
                         additionalCapabilities: vAdditionalCapabilities,
                         vCPUsAvailable: _cmdlet.IsParameterBound(c => c.vCPUCountAvailable) ? _cmdlet.vCPUCountAvailable : (int?)null,
                         vCPUsPerCore: _cmdlet.IsParameterBound(c => c.vCPUCountPerCore) ? _cmdlet.vCPUCountPerCore : (int?)null,
+                        processorMode: _cmdlet.IsParameterBound(c => c.ProcessorMode) ? _cmdlet.ProcessorMode : null,
                         imageReferenceId: _cmdlet.ImageReferenceId,
                         auxAuthHeader: auxAuthHeader,
                         diskControllerType: _cmdlet.DiskControllerType,
@@ -757,7 +801,10 @@ namespace Microsoft.Azure.Commands.Compute
                         excludeZone: _cmdlet.ExcludeZone,
                         alignRegionalDisksToVMZone: _cmdlet.AlignRegionalDisksToVMZone,
                         enableProxyAgent: _cmdlet.EnableProxyAgent ? true : (bool?)null,
-                        addProxyAgentExtension: _cmdlet.AddProxyAgentExtension ? true : (bool?)null
+                        addProxyAgentExtension: _cmdlet.AddProxyAgentExtension ? true : (bool?)null,
+                        scheduledEventsApiVersion: _cmdlet.ScheduledEventsApiVersion,
+                        enableAllInstancesDown: _cmdlet.EnableAllInstancesDown,
+                        disableCapacityReservationAssignment: _cmdlet.DisableCapacityReservationAssignment.IsPresent ? true : (bool?)null
                     );
                 }
                 else  // does not get used. DiskFile parameter set is not supported.
@@ -794,10 +841,12 @@ namespace Microsoft.Azure.Commands.Compute
                         additionalCapabilities: vAdditionalCapabilities,
                         vCPUsAvailable: _cmdlet.IsParameterBound(c => c.vCPUCountAvailable) ? _cmdlet.vCPUCountAvailable : (int?)null,
                         vCPUsPerCore: _cmdlet.IsParameterBound(c => c.vCPUCountPerCore) ? _cmdlet.vCPUCountPerCore : (int?)null,
+                        processorMode: _cmdlet.IsParameterBound(c => c.ProcessorMode) ? _cmdlet.ProcessorMode : null,
                         extendedLocation: extLoc,
                         securityType: _cmdlet.SecurityType,
                         enableVtpm: _cmdlet.EnableVtpm,
-                        enableSecureBoot: _cmdlet.EnableSecureBoot
+                        enableSecureBoot: _cmdlet.EnableSecureBoot,
+                        disableCapacityReservationAssignment: _cmdlet.DisableCapacityReservationAssignment.IsPresent ? true : (bool?)null
                     );
                 }
             }
@@ -998,7 +1047,9 @@ namespace Microsoft.Azure.Commands.Compute
                         CapacityReservation = this.VM.CapacityReservation,
                         UserData = this.VM.UserData,
                         PlatformFaultDomain = this.VM.PlatformFaultDomain,
-                        Placement = this.VM.Placement
+                        Placement = this.VM.Placement,
+                        ScheduledEventsPolicy = this.VM.ScheduledEventsPolicy,
+                        ResiliencyProfile = this.VM.ResiliencyProfile
                     };
 
                     Dictionary<string, List<string>> auxAuthHeader = null;

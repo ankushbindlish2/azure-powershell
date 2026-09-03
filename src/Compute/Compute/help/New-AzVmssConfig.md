@@ -28,16 +28,17 @@ New-AzVmssConfig [[-Overprovision] <Boolean>] [[-Location] <String>] [-EdgeZone 
  [-SpotRestoreTimeout <String>] [-EvictionPolicy <String>] [-MaxPrice <Double>] [-TerminateScheduledEvents]
  [-TerminateScheduledEventNotBeforeTimeoutInMinutes <Int32>] [-ProximityPlacementGroupId <String>]
  [-ScaleInPolicy <String[]>] [-EncryptionAtHost] [-OrchestrationMode <String>]
- [-CapacityReservationGroupId <String>] [-UserData <String>] [-AutomaticRepairAction <String>]
+ [-CapacityReservationGroupId <String>] [-DisableCapacityReservationAssignment] [-UserData <String>] [-AutomaticRepairAction <String>]
  [-BaseRegularPriorityCount <Int32>] [-RegularPriorityPercentage <Int32>] [-ImageReferenceId <String>]
  [-SharedGalleryImageId <String>] [-OSImageScheduledEventEnabled]
- [-OSImageScheduledEventNotBeforeTimeoutInMinutes <String>] [-SecurityType <String>] [-EnableVtpm <Boolean>]
+ [-OSImageScheduledEventNotBeforeTimeoutInMinutes <String>] [-ProcessorMode <String>] [-SecurityType <String>]
+ [-EnableVtpm <Boolean>]
  [-EnableSecureBoot <Boolean>] [-SecurityPostureId <String>] [-SecurityPostureExcludeExtension <String[]>]
  [-SkuProfileVmSize <String[]>] [-SkuProfileAllocationStrategy <String>] [-EnableResilientVMCreate]
  [-EnableResilientVMDelete] [-EnableAutomaticZoneRebalance] [-AutomaticZoneRebalanceStrategy <String>]
  [-AutomaticZoneRebalanceBehavior <String>] [-ZonePlacementPolicy <String>] [-MaxZoneCount <Int32>]
  [-EnableMaxInstancePercentPerZone] [-MaxInstancePercentPerZoneValue <Int32>] [-IncludeZone <String[]>]
- [-ExcludeZone <String[]>] [-HighSpeedInterconnectPlacement <String>] [-ZonalPlatformFaultDomainAlignMode <String>] [-DefaultProfile <IAzureContextContainer>] 
+ [-ExcludeZone <String[]>] [-HighSpeedInterconnectPlacement <String>] [-LifecycleHooksProfile <LifecycleHooksProfile>] [-ZonalPlatformFaultDomainAlignMode <String>] [-DefaultProfile <IAzureContextContainer>] 
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -57,16 +58,17 @@ New-AzVmssConfig [[-Overprovision] <Boolean>] [[-Location] <String>] [-EdgeZone 
  [-TerminateScheduledEventNotBeforeTimeoutInMinutes <Int32>] [-ProximityPlacementGroupId <String>]
  [-ScaleInPolicy <String[]>] -IdentityType <ResourceIdentityType> [-IdentityId <String[]>]
  [-EncryptionIdentity <String>] [-EncryptionAtHost] [-OrchestrationMode <String>]
- [-CapacityReservationGroupId <String>] [-UserData <String>] [-AutomaticRepairAction <String>]
+ [-CapacityReservationGroupId <String>] [-DisableCapacityReservationAssignment] [-UserData <String>] [-AutomaticRepairAction <String>]
  [-BaseRegularPriorityCount <Int32>] [-RegularPriorityPercentage <Int32>] [-ImageReferenceId <String>]
  [-SharedGalleryImageId <String>] [-OSImageScheduledEventEnabled]
- [-OSImageScheduledEventNotBeforeTimeoutInMinutes <String>] [-SecurityType <String>] [-EnableVtpm <Boolean>]
+ [-OSImageScheduledEventNotBeforeTimeoutInMinutes <String>] [-ProcessorMode <String>] [-SecurityType <String>]
+ [-EnableVtpm <Boolean>]
  [-EnableSecureBoot <Boolean>] [-SecurityPostureId <String>] [-SecurityPostureExcludeExtension <String[]>]
  [-SkuProfileVmSize <String[]>] [-SkuProfileAllocationStrategy <String>] [-EnableResilientVMCreate]
  [-EnableResilientVMDelete] [-EnableAutomaticZoneRebalance] [-AutomaticZoneRebalanceStrategy <String>]
  [-AutomaticZoneRebalanceBehavior <String>] [-ZonePlacementPolicy <String>] [-MaxZoneCount <Int32>]
  [-EnableMaxInstancePercentPerZone] [-MaxInstancePercentPerZoneValue <Int32>] [-IncludeZone <String[]>]
- [-ExcludeZone <String[]>] [-HighSpeedInterconnectPlacement <String>] [-ZonalPlatformFaultDomainAlignMode <String>] [-DefaultProfile <IAzureContextContainer>] 
+ [-ExcludeZone <String[]>] [-HighSpeedInterconnectPlacement <String>] [-LifecycleHooksProfile <LifecycleHooksProfile>] [-ZonalPlatformFaultDomainAlignMode <String>] [-DefaultProfile <IAzureContextContainer>] 
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -225,6 +227,11 @@ $vmssGet = Get-AzVmss -ResourceGroupName $rgname -VMScaleSetName $vmssName1;
 
 This example Creates a new VMSS using VMSSConfig object for the Trusted Launch Security Type and validates flags SecureBoot and Vtpm as True by default.
 
+### Example 5: Create a VMSS config with processor mode
+```powershell
+New-AzVmssConfig -Location "westus" -SkuName "Standard_E2pds_v8" -SkuCapacity 2 -ProcessorMode "Deterministic"
+```
+
 ## PARAMETERS
 
 ### -AutomaticRepairAction
@@ -352,6 +359,21 @@ Disable Auto Rollback for Auto OS Upgrade Policy
 
 ```yaml
 Type: System.Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DisableCapacityReservationAssignment
+Specifies that the virtual machine scale set instances are explicitly opted out from being associated with any capacity reservation. When set, the instances will not be allowed to implicitly or explicitly associate with any type of capacity reservation and will consume capacity from the publicly available capacity.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -966,6 +988,21 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -ProcessorMode
+Specifies processor frequency behavior for VM instances in the scale set model. Typical values are `Deterministic` and `Opportunistic`.
+
+```yaml
+Type: System.String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -ProximityPlacementGroupId
 The resource id of the Proximity Placement Group to use with this scale set.
 
@@ -1358,6 +1395,29 @@ Type: System.String
 Parameter Sets: (All)
 Aliases:
 Accepted values: Aligned, Unaligned, BestEffortAligned
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -LifecycleHooksProfile
+Specifies the lifecycle hooks profile for the virtual machine scale set.
+
+Use 'New-AzVmssLifecycleHookConfig' to create hook objects, then build the profile with 'Set-AzVmssLifecycleHooksProfile', or create a LifecycleHooksProfile object directly as shown:
+
+```powershell
+$hook    = New-AzVmssLifecycleHookConfig -Type 'UpgradeAutoOSScheduling' -WaitDuration 'PT8H'
+$profile = New-Object -TypeName Microsoft.Azure.Management.Compute.Models.LifecycleHooksProfile -Property @{ LifecycleHooks = @($hook) }
+New-AzVmssConfig -Location eastus -SkuCapacity 2 -LifecycleHooksProfile $profile
+```
+
+```yaml
+Type: Microsoft.Azure.Management.Compute.Models.LifecycleHooksProfile
+Parameter Sets: (All)
+Aliases:
 
 Required: False
 Position: Named
