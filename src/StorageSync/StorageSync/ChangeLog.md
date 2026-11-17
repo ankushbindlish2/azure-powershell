@@ -18,6 +18,13 @@
         - Additional information about change #1
 -->
 ## Upcoming Release
+* Updated the `Set-AzStorageSyncServer` help description to explain that the cmdlet patches a server's managed identity and re-establishes the trust relationship between the server and its storage sync service, and updated the example to use a placeholder for `ServerId`
+
+## Version 2.7.1
+* Preserved `Set-AzStorageSyncServer` identity token errors and added server-specific guidance.
+* Added `ServerId` to the help example and documented elevated sessions for Azure Arc-enabled servers.
+
+## Version 2.7.0
 * Improved help for the `ChangeEnumerationIntervalDay` parameter
 * Fixed `Set-AzStorageSyncServer` to retrieve the registered server using the validated server ID
 * Added `ChangeEnumerationIntervalDay` parameter to `New-AzStorageSyncCloudEndpoint` cmdlet
